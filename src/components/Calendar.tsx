@@ -59,7 +59,7 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-4 bg-white rounded-lg shadow-md">
+    <div className="w-full h-full mx-auto mt-0 p-4 pt-0 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <button onClick={prevMonth} className="p-2 rounded-full hover:bg-gray-100">
           <ChevronLeft size={24} />
@@ -71,12 +71,14 @@ const Calendar: React.FC = () => {
           <ChevronRight size={24} />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-1">
-        {daysOfWeek.map((day) => (
+      <div className="grid grid-cols-7 gap-1 my-1">
+      {daysOfWeek.map((day) => (
           <div key={day} className="text-center font-medium text-gray-500">
             {day}
           </div>
         ))}
+      </div>
+      <div className="h-[85%] grid grid-cols-7 gap-1">
         {renderCalendarDays()}
       </div>
     </div>

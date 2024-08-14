@@ -11,7 +11,7 @@ interface CalendarCellProps {
 const CalendarCell: React.FC<CalendarCellProps> = ({ day, isCurrentMonth, customColor, date }) => {
   const navigate = useNavigate();
   const cellColor = customColor ? customColor : 'bg-white'
-  const cellClasses = `h-10 flex items-center justify-center border border-gray-200 ${
+  const cellClasses = `h-full flex items-center justify-center border border-gray-200 ${
     isCurrentMonth ? cellColor : 'bg-gray-100 text-gray-400'
   }`;
 
