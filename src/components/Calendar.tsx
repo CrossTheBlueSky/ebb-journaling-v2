@@ -47,6 +47,9 @@ const Calendar: React.FC = () => {
       days.push(
         <CalendarCell 
           key={i} 
+          date={`${month}_${day}_${year}`}
+          // set custom color code not finished. Set to white for now
+          customColor= 'bg-white'
           day={day} 
           isCurrentMonth={isCurrentMonth} 
         />
