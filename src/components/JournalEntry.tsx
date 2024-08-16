@@ -1,12 +1,12 @@
 import React from 'react'
 
-function JournalEntry({title, mood, entryText, date}: {title: string, mood: string, entryText: string, date: string}) {
+function JournalEntry({title, entryText}: {title: string,  entryText: string}) {
 
     return (
 
         <div className="w-1/2 pr-4 flex flex-col">
-        <h3 className="text-xl mb-4">{title}</h3>
-        <p className="mb-4">{entryText}</p>
+        <h3 id="entry-title" className="text-xl mb-4">{title}</h3>
+        <p id="entry-text" className="mb-4">{entryText}</p>
       </div>
     )
 }
