@@ -1,6 +1,8 @@
 import React from 'react'
 import {useLocation, useNavigate} from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import JournalEntry from './JournalEntry'
+import NotePage from './NotePage'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 
 
@@ -12,6 +14,7 @@ const JournalPage: React.FC  = () => {
     const mood = "Placeholder Mood"
     const date = formatDate(state.date)
     const entryText = "Placeholder Entry"
+    const [notesOpen, setNotesOpen] = React.useState(false)
 
     //Convert date route to verbose string
     function formatDate(dateString: string): string {
@@ -38,13 +41,45 @@ const JournalPage: React.FC  = () => {
         return `${formattedMonth} ${formattedDay}, ${year}`;
       }
 
+      const pageTurnHandler = (value: number)=>{
+        const [month, day, year] = state.date.split('_').map(Number);
+
+        // Month is 0-indexed so it's adjusted here and in the getMonth method below
+        const date = new Date(year, month - 1, day);
+      
+        // Adjust the date. It's done this way to account for rollover
+        date.setDate(date.getDate() + value);
+      
+
+        const newMonth = date.getMonth() + 1; 
+        const newDay = date.getDate();
+        const newYear = date.getFullYear();
+        const newDate = `${newMonth}_${newDay}_${newYear}`
+        navigate(`/journal/${newDate}`, {state: {date: newDate}})
+      }
+
     return(
 
             <div className="flex flex-col h-full bg-teal-800 text-white">
               {/* Header */}
-              <div className="bg-orange-400 p-3 text-center">
-                <button onClick={() => navigate(-1)} className="text-white">Back to Calendar</button>
+              <div className="flex flex-row justify-between bg-orange-400 p-2">
+                <div className="mt-2">
+                <button onClick={() => pageTurnHandler(-1) } className="text-white ">
+              <ChevronLeft size={24} />
+                </button>
+                </div>
+                <div>
+                <button onClick={() => navigate(-1)} className="text-white text-3xl">Back to Calendar</button>
+                </div>
+                <div className="mt-2">
+                <button onClick={()=> pageTurnHandler(1)} className="text-white">  
+                  <ChevronRight size={24} />
+                </button>
+                </div>
               </div>
+
+
+
               
               {/* Main content */}
               <div className="flex-1 p-6 flex flex-col">
@@ -57,13 +92,14 @@ const JournalPage: React.FC  = () => {
                 <div className="flex flex-1">
                   {/* Left column */}
                   <div className="w-1/2 pr-4 flex flex-col">
-                    <h3 className="text-xl mb-4">{title}</h3>
-                    <p className="mb-4">{entryText}</p>
-                    <button className="mt-auto bg-orange-400 text-white py-2 px-4 rounded">
-                      Notes
-                    </button>
+                    {notesOpen ? <NotePage /> : 
+                    <JournalEntry title={title} mood={mood} entryText={entryText} date={date} />}
+                  <button className="mt-auto bg-orange-400 text-white py-2 px-4 rounded"
+                  onClick={() => setNotesOpen(!notesOpen)}>
+                    {notesOpen ? "Back to Entry" : "Notes"}
+                  </button>
                   </div>
-                  
+
                   {/* Right column - Image placeholder */}
                   <div className="w-1/2 bg-blue-600">
                     {/* Placeholder for image */}
