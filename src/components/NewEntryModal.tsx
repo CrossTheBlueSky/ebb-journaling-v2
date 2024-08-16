@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {useNavigate} from 'react-router-dom'
 
 const AutoOpenModal = ({condition }: { condition: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,6 +8,7 @@ const AutoOpenModal = ({condition }: { condition: boolean }) => {
   const [entry, setEntry] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const navigate = useNavigate()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -118,7 +120,9 @@ const AutoOpenModal = ({condition }: { condition: boolean }) => {
           </button>
           <button 
             type="button"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+                setIsOpen(false)
+                navigate("/")}}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
             Cancel
