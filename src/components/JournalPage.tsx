@@ -11,7 +11,7 @@ const JournalPage: React.FC  = () => {
     const location = useLocation()
     const {state} = location
     const title = "Placeholder Title"
-    const mood = "Big Mood"
+    const mood = "Placeholder Mood"
     const date = formatDate(state.date)
     const entryText = "Placeholder Entry"
     const [notesOpen, setNotesOpen] = React.useState(false)
