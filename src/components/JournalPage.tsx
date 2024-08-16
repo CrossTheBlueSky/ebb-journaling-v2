@@ -3,7 +3,7 @@ import {useLocation, useNavigate} from 'react-router-dom'
 import JournalEntry from './JournalEntry'
 import NotePage from './NotePage'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
+import NewEntryModal from './NewEntryModal'
 
 
 const JournalPage: React.FC  = () => {
@@ -11,7 +11,7 @@ const JournalPage: React.FC  = () => {
     const location = useLocation()
     const {state} = location
     const title = "Placeholder Title"
-    const mood = "Placeholder Mood"
+    const mood = "Big Mood"
     const date = formatDate(state.date)
     const entryText = "Placeholder Entry"
     const [notesOpen, setNotesOpen] = React.useState(false)
@@ -77,9 +77,6 @@ const JournalPage: React.FC  = () => {
                 </button>
                 </div>
               </div>
-
-
-
               
               {/* Main content */}
               <div className="flex-1 p-6 flex flex-col">
@@ -114,6 +111,7 @@ const JournalPage: React.FC  = () => {
               <div className="bg-purple-900 p-3 text-center">
                 <button className="text-white">Delete Entry</button>
               </div>
+              {mood === "Placeholder Mood" ? <NewEntryModal condition={true}/> : null}
             </div>
           );
         };
