@@ -10,7 +10,7 @@ interface NewEntryModalProps {
 const NewEntryModal: React.FC<NewEntryModalProps> = ({ isOpen, onSubmit, onClose }) => {
   const [title, setTitle] = useState('');
   const [mood, setMood] = useState('');
-  const [moodColor, setMoodColor] = useState('cornflowerblue');
+  const [moodColor, setMoodColor] = useState("#00e600");
   const [entry, setEntry] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -39,11 +39,16 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({ isOpen, onSubmit, onClose
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+
     event.preventDefault();
+
+
+    //values from form
     const formData = new FormData();
     formData.append('title', title);
     formData.append('mood', mood);
     formData.append('entry', entry);
+    formData.append('moodColor', moodColor);
     if (selectedFile) {
       formData.append('image', selectedFile);
     }
@@ -75,7 +80,9 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({ isOpen, onSubmit, onClose
               Mood
             </label>
             <input id="mood-color" type="color" 
-            onChange={(e)=>setMoodColor(e.target.value)}
+            onChange={(e)=>{
+              setMoodColor(e.target.value)
+            }}
             className="w-full" 
             defaultValue="#00e600" />
             <input

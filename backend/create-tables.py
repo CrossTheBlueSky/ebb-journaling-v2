@@ -14,9 +14,10 @@ except Exception as e:
 
 # Create Tables
 
-def create_tables():
+def drop_and_create_tables():
     conn = get_db_connection()
     cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS users, moods, user_moods, entries, notes;')
     cur.execute('''
 -- Create the users table
 CREATE TABLE IF NOT EXISTS users (
@@ -24,24 +25,29 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL
 );
 
--- Create the user_moods table
+-- Create the moods table for general moods
+CREATE TABLE IF NOT EXISTS moods (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Create the user_moods table for user-specific mood settings
 CREATE TABLE IF NOT EXISTS user_moods (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    name VARCHAR(50) NOT NULL,
-    color VARCHAR(7) NOT NULL,
-    UNIQUE (user_id, name),
-    UNIQUE (user_id, color)
+    mood_id INTEGER REFERENCES moods(id),
+    color VARCHAR(50) NOT NULL,
+    UNIQUE (user_id, mood_id)
 );
 
 -- Create the entries table
 CREATE TABLE IF NOT EXISTS entries (
     id VARCHAR(255) PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    date DATE NOT NULL,
+    date VARCHAR(255) NOT NULL,
     user_mood_id INTEGER REFERENCES user_moods(id),
     title VARCHAR(255) NOT NULL,
-    image_url TEXT,
+    image_path TEXT,
     entry_text TEXT NOT NULL
 );
 
@@ -49,12 +55,16 @@ CREATE TABLE IF NOT EXISTS entries (
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
     entry_id VARCHAR(255) REFERENCES entries(id),
-    date DATE NOT NULL,
+    date VARCHAR(255) NOT NULL,
     text TEXT NOT NULL
 );
     ''')
+
+#create test user
+
+    cur.execute('INSERT INTO users (name) VALUES (%s)', ('Test User',))
     conn.commit()
     cur.close()
     conn.close()
 
-create_tables()
+drop_and_create_tables()
