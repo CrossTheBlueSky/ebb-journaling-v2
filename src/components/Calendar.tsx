@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CalendarCell from './CalendarCell';
 
@@ -14,6 +14,7 @@ const Calendar: React.FC = () => {
   const month: number = currentDate.getMonth();
   const daysInMonth: number = getDaysInMonth(year, month);
   const firstDayOfMonth: number = getFirstDayOfMonth(year, month);
+  
 
   const prevMonth = (): void => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -22,6 +23,42 @@ const Calendar: React.FC = () => {
   const nextMonth = (): void => {
     setCurrentDate(new Date(year, month + 1, 1));
   };
+
+  useEffect(() => {
+    fetchUserEntriesForCurrentMonth(1);
+  }, []);
+
+  async function fetchUserEntriesForCurrentMonth(userId: number) {
+
+    
+    // Format the start and end dates for the current month (MM_DD_YYYY)
+    const startDate =  convertDateString(`${month }_01_${year}`);
+    const endDate = convertDateString(`${month}_${daysInMonth}_${year}`);
+    function convertDateString(dateString: string) {
+      const [month, day, year] = dateString.split('_');
+      return `${month.padStart(2, '0')}${day.padStart(2, '0')}${year}`;
+    }
+ 
+    const url = `/api/entries?userId=${userId}&startDate=${startDate}&endDate=${endDate}`;
+
+    try {
+        fetch(url)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => console.log(data));
+      
+
+  
+    } catch (error) {
+      console.error("Could not fetch entries:", error);
+      throw error;
+    }
+  }
+  
 
   const renderCalendarDays = (): JSX.Element[] => {
     const days: JSX.Element[] = [];

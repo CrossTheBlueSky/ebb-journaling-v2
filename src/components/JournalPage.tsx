@@ -11,7 +11,7 @@ const JournalPage: React.FC = () => {
   const { state } = location;
   const [title, setTitle] = useState("Placeholder Title");
   const [mood, setMood] = useState("Placeholder Mood");
-  const [moodColor, setMoodColor] = useState("#00e600"); // Default color
+  const [moodColor, setMoodColor] = useState("#00e600"); //random color as placeholder since black might not register as interactable
   const [entryText, setEntryText] = useState("Placeholder Entry");
   const [notesOpen, setNotesOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,73 +64,86 @@ const JournalPage: React.FC = () => {
     return `${formattedMonth} ${formattedDay}, ${year}`;
   }
 
-  const  handleFormSubmit = async (formData: FormData) => {
+
+  const handleFormSubmit = async (formData: FormData) => {
     // Update the state with the form data
     setTitle(formData.get("title") as string);
     setMood(formData.get("mood") as string);
     setEntryText(formData.get("entry") as string);
-
-    // Update mood color
-    console.log(formData.get("moodColor"));
     setMoodColor(formData.get("moodColor") as string);
-    // Handle the image file if needed
-    const imageFile = formData.get("image") as File;
-    if (imageFile) {
-      // Process the image file (e.g., create a URL, upload to server, etc.)
-    }
+  
     setIsModalOpen(false);
-
-    //id, user_id, date, user_mood_id, title, image_path, entry_text
-    // First API call to create a mood
-    const userId = 1; // Replace this with actual user authentication
-      
+  
+    const userId = 1; // Placeholder for user ID
+  
     try {
-        // Step 1: Check if the mood already exists, if not create it
-        const moodResponse = await fetch("http://localhost:5000/api/moods", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.get("mood"),
-            user_id: userId,
-            color: formData.get("moodColor"),
-          }),
-        });
-    
-        if (!moodResponse.ok) {
-          const errorData = await moodResponse.json();
-          console.error("Mood API error:", errorData);
-          throw new Error(`Failed to create/fetch mood: ${errorData.error || moodResponse.statusText}`);
-        }
-        const moodData = await moodResponse.json();
-        console.log("Mood data:", moodData);
-    
-        // Step 2: Create the entry
-        const entryResponse = await fetch("http://localhost:5000/api/entries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: userId,
-            date: state.date,  // Use state.date directly
-            user_mood_id: moodData.user_mood_id,
-            title: formData.get("title"),
-            image_path: "", // Update this if you handle image uploads
-            entry_text: formData.get("entry"),
-          }),
-        });
-    
-        if (!entryResponse.ok) {
-          const errorData = await entryResponse.json();
-          console.error("Entry API error:", errorData);
-          throw new Error(`Failed to create entry: ${errorData.error || entryResponse.statusText}`);
-        }
-        const entryData = await entryResponse.json();
-        console.log("Entry created:", entryData);
-    
-      } catch (error) {
-        console.error("Error:", error);
-        // Handle the error appropriately (e.g., show an error message to the user)
+      // Create or fetch mood
+      const moodResponse = await fetch("http://localhost:5000/api/moods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("mood"),
+          user_id: userId,
+          color: formData.get("moodColor"),
+        }),
+      });
+  
+      if (!moodResponse.ok) {
+        const errorData = await moodResponse.json();
+        throw new Error(`Failed to create/fetch mood: ${errorData.error || moodResponse.statusText}`);
       }
+  
+      const moodData = await moodResponse.json();
+      console.log("Mood data:", moodData);
+  
+
+      // Handle image if present
+      const imageFile = formData.get("image") as File;
+      if (imageFile) {
+        console.log("image found. You should actually handle these at some point, DEREK")
+      }
+
+      //convert date to an int format so I can query the backend better later
+      //turns out THIS DOESN'T WORK CAUSE THE BACKEND DOESN'T DO LEADING 0's
+      //but I also fixed it in the backend by just adding leading 0's for the query
+      const dateInt = parseInt(convertDateString(state.date));
+
+      function convertDateString(dateString: string) {
+        const [month, day, year] = dateString.split('_');
+        const convertedString = `${month.padStart(2, '0')}${day.padStart(2, '0')}${year}`;
+        console.log(convertedString)
+        return convertedString;
+      }
+  
+      // CU out of CRUD 
+      const entryResponse = await fetch("http://localhost:5000/api/entries", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            user_id : userId,
+            date :  dateInt,
+            user_mood_id : moodData.user_mood_id,
+            title : formData.get("title") as string,
+            entry_text : formData.get("entry") as string
+        })
+
+      });
+  
+      if (!entryResponse.ok) {
+        const errorData = await entryResponse.json();
+        throw new Error(`Failed to create/update entry: ${errorData.error || entryResponse.statusText}`);
+      }
+  
+      const entryResult = await entryResponse.json();
+      console.log("Entry created/updated:", entryResult);
+  
+      
+  
+    } catch (error) {
+      console.error("Error:", error);
+      // if I want more error handling, here's where it goes
     }
+  };
 
   const pageTurnHandler = (value: number) => {
     const [month, day, year] = state.date.split("_").map(Number);
@@ -193,7 +206,7 @@ const JournalPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Right column - Image placeholder */}
+          {/* Right column*/}
           <div className="w-1/2 bg-blue-600">
             {/* Placeholder for image */}
             <div className="h-full bg-opacity-50 flex items-end">
@@ -208,6 +221,7 @@ const JournalPage: React.FC = () => {
         <button className="text-white">Delete Entry</button>
       </div>
 
+      {/* This can go anywhere but I put it at the bottom since it's not really a part of the page flow */}
       <NewEntryModal
         isOpen={isModalOpen}
         onSubmit={handleFormSubmit}
