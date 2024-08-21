@@ -142,8 +142,8 @@ const Calendar: React.FC = () => {
       if(matchingEntry){
         console.log(matchingEntry);
       }
-      const customColor = matchingEntry?.mood_color || 'bg-white'
-  
+      const customColor = matchingEntry?.mood_color || '#ffffff'; 
+
       days.push(
         <CalendarCell 
           key={i}
