@@ -56,9 +56,10 @@ def entries():
             try:
                 print(f"fetching entries between {start_date} and {end_date} for user {user_id}")
                 cur.execute("""
-                    SELECT entries.*, user_moods.color AS mood_color
+                    SELECT entries.*, user_moods.color AS mood_color, moods.name AS mood_name
                     FROM entries
                     LEFT JOIN user_moods ON entries.user_mood_id = user_moods.id
+                    LEFT JOIN moods ON user_moods.mood_id = moods.id
                     WHERE entries.user_id = %s 
                     AND entries.date >= %s
                     AND entries.date <= %s

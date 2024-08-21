@@ -151,6 +151,7 @@ const Calendar: React.FC = () => {
           date={cellDate}
           customColor={customColor}
           isCurrentMonth={isCurrentMonth} 
+          entry = {matchingEntry || null}
         />
       );
     }

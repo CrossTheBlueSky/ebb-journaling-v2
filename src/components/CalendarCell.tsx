@@ -6,9 +6,10 @@ interface CalendarCellProps {
   isCurrentMonth: boolean;
   date: Date;
   customColor: string;
+  entry: object | null;
 }
 
-const CalendarCell: React.FC<CalendarCellProps> = ({ day, isCurrentMonth, customColor, date }) => {
+const CalendarCell: React.FC<CalendarCellProps> = ({ day, isCurrentMonth, customColor, date, entry }) => {
   const navigate = useNavigate();
   
   const cellClasses = `h-full flex items-center justify-center border border-gray-200 ${isCurrentMonth ? '' : 'text-gray-400'}`;
@@ -17,14 +18,14 @@ const CalendarCell: React.FC<CalendarCellProps> = ({ day, isCurrentMonth, custom
   
   const clickHandler: React.MouseEventHandler<HTMLDivElement> = () => {
     if (isCurrentMonth) {
-      navigate(`/journal/${dateString}`, { state: { date: date } });
+      navigate(`/journal/${dateString}`, { state: {date, entry} });
     } else {
       alert('Please select a date from the current month!');
     }
   };
 
   const cellStyle: React.CSSProperties = {
-    backgroundColor: isCurrentMonth ? customColor : '#f3f4f6', // gray-100 equivalent
+    backgroundColor: isCurrentMonth ? customColor : '#f3f4f6',
   };
 
   return (

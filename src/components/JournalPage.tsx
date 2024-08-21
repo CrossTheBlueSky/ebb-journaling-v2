@@ -9,20 +9,25 @@ const JournalPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location;
-  const [title, setTitle] = useState("Placeholder Title");
-  const [mood, setMood] = useState("Placeholder Mood");
+  const [title, setTitle] = useState("");
+  const [mood, setMood] = useState("");
   const [moodColor, setMoodColor] = useState("#00e600");
-  const [entryText, setEntryText] = useState("Placeholder Entry");
+  const [entryText, setEntryText] = useState("");
   const [notesOpen, setNotesOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date(state.date));
 
   useEffect(() => {
-    console.log(currentDate, state.date)
-    if (mood === "Placeholder Mood") {
+    if(state.entry){
+      console.log(state.entry)
+      setMood(state.entry.mood);
+      setMoodColor(state.entry.mood_color);
+      setEntryText(state.entry.text);
+      setTitle(state.entry.title);
+    }else if(mood === "") {
       setIsModalOpen(true);
     }
-  }, [mood]);
+  });
 
   function formatDate(date: Date): string {
     const monthNames = [
