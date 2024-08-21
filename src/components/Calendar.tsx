@@ -1,20 +1,49 @@
-import React, { useState, useEffect } from 'react';
+//Things this component does:
+// 1. Fetch entry data from the backend by month
+// 2. Use that data to color-code the cells, and importantly, pass it to the JournalPage component (less api calls this way)
+// 3. Render the Calendar and control for navigating between months, repeating the fetch-cache process
+
+//TODO: Potentially allow zooming out of month view to a year view
+
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CalendarCell from './CalendarCell';
 
 const daysOfWeek: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+interface Entry {
+  id: number;
+  date: Date;
+  mood_color: string;
+}
+
+// Utility functions for caching
+const getCachedEntries = (key: string): Entry[] | null => {
+  const cachedData = localStorage.getItem(key);
+  return cachedData ? JSON.parse(cachedData, (key, value) => {
+    if (key === 'date') return new Date(value);
+    return value;
+  }) : null;
+};
+
+const setCachedEntries = (key: string, entries: Entry[]): void => {
+  localStorage.setItem(key, JSON.stringify(entries));
+};
+
+
+//Component starts here
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-
-  const getDaysInMonth = (year: number, month: number): number => new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year: number, month: number): number => new Date(year, month, 1).getDay();
+  const [entries, setEntries] = useState<Entry[]>([]);
+  //Lot of things to get the calendar to work with month rollover, caching, date coloring, etc.
+  const getDaysInMonth = (date: Date): number => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (date: Date): number => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const year: number = currentDate.getFullYear();
   const month: number = currentDate.getMonth();
-  const daysInMonth: number = getDaysInMonth(year, month);
-  const firstDayOfMonth: number = getFirstDayOfMonth(year, month);
-  
+  const daysInMonth: number = getDaysInMonth(currentDate);
+  const firstDayOfMonth: number = getFirstDayOfMonth(currentDate);
 
   const prevMonth = (): void => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -24,70 +53,103 @@ const Calendar: React.FC = () => {
     setCurrentDate(new Date(year, month + 1, 1));
   };
 
-  useEffect(() => {
-    fetchUserEntriesForCurrentMonth(1);
-  }, []);
 
-  async function fetchUserEntriesForCurrentMonth(userId: number) {
+  //Fetching entries for current month and caching them to reduce future fetch calls
+
+  
+  const fetchUserEntriesForCurrentMonth = useCallback(async (userId: number) => {
+    const cacheKey = `entries_${userId}_${year}_${month}`;
+    const cachedEntries = getCachedEntries(cacheKey);
+    
 
     
-    // Format the start and end dates for the current month (MM_DD_YYYY)
-    const startDate =  convertDateString(`${month }_01_${year}`);
-    const endDate = convertDateString(`${month}_${daysInMonth}_${year}`);
-    function convertDateString(dateString: string) {
-      const [month, day, year] = dateString.split('_');
-      return `${month.padStart(2, '0')}${day.padStart(2, '0')}${year}`;
-    }
- 
-    const url = `/api/entries?userId=${userId}&startDate=${startDate}&endDate=${endDate}`;
+    // don't fetch if already cached
+    // if (cachedEntries) {
+    //   console.log("cached entries:", cachedEntries)
+    //   setEntries(cachedEntries);
+    //   return;
+    // }
+
+    // Getting the start and end of the month to only fetch entries for the current month
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month, getDaysInMonth(currentDate));
+    const url = `/api/entries?userId=${userId}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
 
     try {
-        fetch(url)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => console.log(data));
-      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: Entry[] = await response.json();
+      // Convert date strings to Date objects
 
-  
+      const entriesWithDates = data.map(entry => {
+        //JS is actually obnoxious with trying to automatically adjust 
+        //the dates to match the time zone. I can't stop it from doing that, so I have to
+        //manually undo it
+
+        const offSetFinder = new Date().getTimezoneOffset();
+        const adjustedDate = new Date(new Date(entry.date).getTime() + (offSetFinder * 60 * 1000));
+
+      return {
+        ...entry,
+        date: adjustedDate,
+      }});
+      setEntries(entriesWithDates);
+      setCachedEntries(cacheKey, entriesWithDates);
+      console.log("Entries fetched:", entriesWithDates);
     } catch (error) {
       console.error("Could not fetch entries:", error);
-      throw error;
     }
-  }
-  
+  }, [year, month, currentDate]);
+
+  useEffect(() => {
+    fetchUserEntriesForCurrentMonth(1); // Assuming userId is 1
+  }, [fetchUserEntriesForCurrentMonth]);
 
   const renderCalendarDays = (): JSX.Element[] => {
     const days: JSX.Element[] = [];
     const totalCells: number = 42; // 6 rows * 7 days
-    const daysInPrevMonth: number = getDaysInMonth(year, month - 1);
-
+  
+    const lastDayOfPreviousMonth = new Date(year, month, 0);
+    const daysInPreviousMonth = lastDayOfPreviousMonth.getDate();
+  
     for (let i = 0; i < totalCells; i++) {
-      const dayNumber: number = i - firstDayOfMonth + 1;
-      let day: number;
-      let isCurrentMonth: boolean;
-
-      if (dayNumber <= 0) {
-        day = daysInPrevMonth + dayNumber;
-        isCurrentMonth = false;
-      } else if (dayNumber > daysInMonth) {
-        day = dayNumber - daysInMonth;
-        isCurrentMonth = false;
+      let cellDate: Date;
+      let dayNumber: number;
+  
+      if (i < firstDayOfMonth) {
+        // Days from the previous month
+        dayNumber = daysInPreviousMonth - firstDayOfMonth + i + 1;
+        cellDate = new Date(year, month - 1, dayNumber);
+      } else if (i >= firstDayOfMonth + daysInMonth) {
+        // Days from the next month
+        dayNumber = i - (firstDayOfMonth + daysInMonth) + 1;
+        cellDate = new Date(year, month + 1, dayNumber);
       } else {
-        day = dayNumber;
-        isCurrentMonth = true;
+        // Days in the current month
+        dayNumber = i - firstDayOfMonth + 1;
+        cellDate = new Date(year, month, dayNumber);
       }
-
+  
+      const isCurrentMonth: boolean = cellDate.getMonth() === month;
+  
+      const matchingEntry = entries.find(entry => 
+        entry.date.getFullYear() === cellDate.getFullYear() &&
+        entry.date.getMonth() === cellDate.getMonth() &&
+        entry.date.getDate() === cellDate.getDate()
+      );
+      if(matchingEntry){
+        console.log(matchingEntry);
+      }
+      const customColor = matchingEntry?.mood_color || 'bg-white'
+  
       days.push(
         <CalendarCell 
-          key={i} 
-          date={`${month}_${day}_${year}`}
-          // set custom color code not finished. Set to white for now
-          customColor= 'bg-white'
-          day={day} 
+          key={i}
+          day={dayNumber} 
+          date={cellDate}
+          customColor={customColor}
           isCurrentMonth={isCurrentMonth} 
         />
       );
@@ -109,7 +171,7 @@ const Calendar: React.FC = () => {
         </button>
       </div>
       <div className="grid grid-cols-7 gap-1 my-1">
-      {daysOfWeek.map((day) => (
+        {daysOfWeek.map((day) => (
           <div key={day} className="text-center font-medium text-gray-500">
             {day}
           </div>

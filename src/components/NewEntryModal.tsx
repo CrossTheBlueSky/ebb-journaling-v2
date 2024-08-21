@@ -38,6 +38,8 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({ isOpen, onSubmit, onClose
     }
   };
 
+  
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 
     event.preventDefault();

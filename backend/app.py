@@ -56,14 +56,17 @@ def entries():
             try:
                 print(f"fetching entries between {start_date} and {end_date} for user {user_id}")
                 cur.execute("""
-                    SELECT * FROM entries
-                    WHERE user_id = %s 
-                    AND LPAD(date, 8, '0') >= %s
-                    AND LPAD(date, 8, '0') <= %s
-                    ORDER BY id
-                    """, (user_id, start_date, end_date))
-                
+                    SELECT entries.*, user_moods.color AS mood_color
+                    FROM entries
+                    LEFT JOIN user_moods ON entries.user_mood_id = user_moods.id
+                    WHERE entries.user_id = %s 
+                    AND entries.date >= %s
+                    AND entries.date <= %s
+                    ORDER BY entries.id
+                """, (user_id, start_date, end_date))
+            
                 entries = cur.fetchall()
+
                 print(entries)
                 return jsonify(entries)
 
@@ -82,7 +85,7 @@ def entries():
 
             conn = get_connection()
             cur = conn.cursor(cursor_factory=RealDictCursor)
-
+            print(f"adding entry for user {data['user_id']} on {data['date']}")
             try:
                 image_path = None
                 if 'image' in request.files:

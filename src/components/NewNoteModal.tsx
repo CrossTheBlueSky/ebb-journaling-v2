@@ -2,22 +2,24 @@ import React, { useState } from 'react';
 
 interface NewNoteModalProps {
   isOpen: boolean;
+  onSubmit: (data: FormData) => void;
   onClose: () => void;
 }
 
-const NewNoteModal: React.FC<NewNoteModalProps> = ({ isOpen, onClose }) => {
+const NewNoteModal: React.FC<NewNoteModalProps> = ({ isOpen, onSubmit, onClose }) => {
   const [note, setNote] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO - Handle form submission
-
-    // Reset form fields
-    setNote('');
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append('text', note);
+    onSubmit(formData);
     onClose();
-  };
+  }
+
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">

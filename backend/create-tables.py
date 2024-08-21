@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS user_moods (
 CREATE TABLE IF NOT EXISTS entries (
     id VARCHAR(255) PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    date VARCHAR(255) NOT NULL,
+    date date NOT NULL,
     user_mood_id INTEGER REFERENCES user_moods(id),
     title VARCHAR(255) NOT NULL,
     image_path TEXT,
@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS entries (
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
     entry_id VARCHAR(255) REFERENCES entries(id),
-    date VARCHAR(255) NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    date date NOT NULL,
     text TEXT NOT NULL
 );
     ''')
