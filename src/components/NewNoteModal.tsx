@@ -35,7 +35,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({ isOpen, onSubmit, onClose }
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
-                placeholder="Write your journal entry here"
+                placeholder="Write your note here"
                 required
               ></textarea>
             </div>

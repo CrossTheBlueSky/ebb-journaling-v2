@@ -57,7 +57,7 @@ const JournalPage: React.FC = () => {
     setMoodColor(formData.get("moodColor") as string);
     setIsModalOpen(false);
 
-    const userId = 1; // Placeholder for user ID
+    const userId = 1; // Placeholder for now until uauth is set up
 
     try {
       const moodResponse = await fetch("http://localhost:5000/api/moods", {
@@ -105,44 +105,25 @@ const JournalPage: React.FC = () => {
 
     } catch (error) {
       console.error("Error:", error);
-      // Additional error handling can be added here
     }
   };
 
-  const pageTurnHandler = (value: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + value);
-    setCurrentDate(newDate);
-    navigate(`/journal/${formatDateForURL(newDate)}`, { state: { date: newDate } });
-  };
-
-  const formatDateForURL = (date: Date): string => {
-    return `${date.getMonth() + 1}_${date.getDate()}_${date.getFullYear()}`;
-  };
 
   return (
-    <div className="flex flex-col h-full bg-teal-800 text-white">
+    <div className="flex flex-col h-screen bg-teal-800 text-white">
       {/* Header */}
       <div className="flex flex-row justify-between bg-orange-400 p-2">
-        <div className="mt-2">
-          <button onClick={() => pageTurnHandler(-1)} className="text-white">
-            <ChevronLeft size={24} />
-          </button>
-        </div>
+        <div className="mt-2"></div>
         <div>
           <button onClick={() => navigate("/")} className="text-white text-3xl">
             Back to Calendar
           </button>
         </div>
-        <div className="mt-2">
-          <button onClick={() => pageTurnHandler(1)} className="text-white">
-            <ChevronRight size={24} />
-          </button>
-        </div>
+        <div className="mt-2"></div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 p-6 flex flex-col">
+      <div className="flex-1 p-6 flex flex-col overflow-hidden">
         <h2 className="text-2xl font-semibold mb-1">{formatDate(currentDate)}</h2>
         <div className="mb-4 mt-1 flex mx-auto">
           <span id="mood-name" className="mr-2">
@@ -154,16 +135,18 @@ const JournalPage: React.FC = () => {
             style={{ backgroundColor: moodColor }}
           ></div>
         </div>
-        <div className="flex flex-1">
+        <div className="flex flex-1 overflow-hidden">
           {/* Left column */}
-          <div className="w-1/2 pr-4 flex flex-col">
-            {notesOpen ? (
-              <NotePage entryDate={formatDate(currentDate)} />
-            ) : (
-              <JournalEntry title={title} entryText={entryText} />
-            )}
+          <div className="w-1/2 pr-4 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-hidden">
+              {notesOpen ? (
+                <NotePage entry_id={state.entry.id} />
+              ) : (
+                <JournalEntry title={title} entryText={entryText} />
+              )}
+            </div>
             <button
-              className="mt-auto bg-orange-400 text-white py-2 px-4 rounded"
+              className="mt-4 bg-orange-400 text-white py-2 px-4 rounded"
               onClick={() => setNotesOpen(!notesOpen)}
             >
               {notesOpen ? "Back to Entry" : "Notes"}
@@ -171,7 +154,7 @@ const JournalPage: React.FC = () => {
           </div>
 
           {/* Right column*/}
-          <div className="w-1/2 bg-blue-600">
+          <div className="w-1/2 bg-blue-600 overflow-hidden">
             {/* Placeholder for image */}
             <div className="h-full bg-opacity-50 flex items-end">
               <div className="w-16 h-24 bg-black opacity-25 mb-4 ml-auto mr-4"></div>
@@ -190,8 +173,8 @@ const JournalPage: React.FC = () => {
         isOpen={isModalOpen}
         onSubmit={handleFormSubmit}
         onClose={() => {
-          setIsModalOpen(false)
-          navigate('/')
+          setIsModalOpen(false);
+          navigate('/');
         }}
       />
     </div>

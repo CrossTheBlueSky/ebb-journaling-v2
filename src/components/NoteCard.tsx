@@ -1,18 +1,30 @@
 import React from 'react'
 
-const NoteCard: React.FC = () => {
+interface NoteCardProps {
+        note: {
+                id: number;
+                text: string;
+                date: string;
+        };
+    }
+
+const NoteCard: React.FC<NoteCardProps> = ({note}) => {
 
         return(
-            <div className="border-solid border-2 row-span-1 col-span-1  h-1/3">
-            <div className="flex flex-col mx-25 place-self-center">
-            <h2 className="text-xl"><strong>Date will go here</strong></h2>
-            <p>Text will go here</p>
-            {/* TODO: Add delete logic */}
-            <button className="btn btn-primary btn-xs w-1/4 place-self-center">Delete Note</button>
-            <br />
+            <div className="border-solid border-2 mb-3">
+            <div className="flex flex-col mx-4 py-2">
+              <h2 className="text-xl"><strong>{note.date}</strong></h2>
+              <div>
+                <p>{note.text}</p>
+              </div>
+
+              {/* TODO: Add delete logic*/}
+              <button className="bg-red-500 hover:bg-red-700 text-white font-bold mt-4 mb-1 py-2 px-4 self-center rounded">
+                Delete Note
+              </button>
             </div>
-            </div>
-        )
+          </div>
+        );
 }
 
 export default NoteCard

@@ -222,30 +222,56 @@ def user_moods():
 
 @app.route('/api/notes', methods=['POST'])
 def notes():
-    data = request.json
+    
+    if request.method == 'POST':
+        data = request.json
 
-    # Validate required fields
-    required_fields = ['entry_id', 'date', 'text']
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
+        # Validate required fields
+        required_fields = ['entry_id', 'user_id','date', 'text']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
 
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        try:
+            print("made it to the try block")
+            # Insert the note
+            cur.execute("INSERT INTO notes (entry_id, user_id, date, text) VALUES (%s, %s, %s, %s) RETURNING id", (
+                data['entry_id'],
+                data['user_id'],
+                data['date'],
+                data['text']
+            ))
+            new_note_id = cur.fetchone()['id']
+
+            conn.commit()
+            return jsonify({"note_id": new_note_id})
+        except Exception as e:
+            conn.rollback()
+            print(f"Error in notes endpoint: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+        finally:
+            cur.close()
+            release_connection(conn)
+@app.route('/api/notes/<entry_id>', methods=['GET'])
+def get_notes_by_entry_id(entry_id):
     conn = get_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        # Insert the note
-        cur.execute("INSERT INTO notes (entry_id, date, text) VALUES (%s, %s, %s) RETURNING id", (
-            data['entry_id'],
-            data['date'],  # Use the date as-is
-            data['text']
-        ))
-        new_note_id = cur.fetchone()['id']
-
-        conn.commit()
-        return jsonify({"note_id": new_note_id})
+        cur.execute("""
+            SELECT id, entry_id, user_id, date, text
+            FROM notes
+            WHERE entry_id = %s
+            ORDER BY date DESC
+        """, (entry_id,))
+        
+        notes = cur.fetchall()
+        
+        return jsonify(notes)
     except Exception as e:
-        conn.rollback()
-        print(f"Error in notes endpoint: {str(e)}")
+        print(f"Error in get_notes_by_entry_id endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 500
     finally:
         cur.close()
