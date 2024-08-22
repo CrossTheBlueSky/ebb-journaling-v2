@@ -9,6 +9,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CalendarCell from './CalendarCell';
+import {LoginCheck} from '../hooks/LoginCheck';
 
 const daysOfWeek: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -34,8 +35,16 @@ const setCachedEntries = (key: string, entries: Entry[]): void => {
 
 //Component starts here
 const Calendar: React.FC = () => {
+
+  //confirming user is logged in
+  const {user, logout} = LoginCheck();
+  console.log(user)
+
+
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [entries, setEntries] = useState<Entry[]>([]);
+
+
   //Lot of things to get the calendar to work with month rollover, caching, date coloring, etc.
   const getDaysInMonth = (date: Date): number => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   const getFirstDayOfMonth = (date: Date): number => new Date(date.getFullYear(), date.getMonth(), 1).getDay();

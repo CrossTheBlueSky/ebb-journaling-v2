@@ -1,4 +1,8 @@
 from flask import Flask, request, jsonify
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_sqlalchemy import SQLAlchemy
+
 import psycopg2
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
@@ -8,8 +12,16 @@ import os
 import uuid
 from flask_cors import CORS
 from config import DB_CONFIG
+from config import DB_SECRET_KEY
 
 app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_CONFIG["user"]}:{DB_CONFIG["password"]}@{DB_CONFIG["host"]}:{DB_CONFIG["port"]}/{DB_CONFIG["dbname"]}'
+app.config['JWT_SECRET_KEY'] = DB_SECRET_KEY
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
+
+
 CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}})
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -37,6 +49,73 @@ def handle_exception(e):
     app.logger.error(f"Unhandled exception: {str(e)}")
     # Return JSON instead of HTML for HTTP errors
     return jsonify(error=str(e)), 500
+@app.route('/api/register', methods=['POST'])
+def register():
+
+    try:
+        username = request.json.get('username', None)
+        password = request.json.get('password', None)
+
+        if not username or not password:
+            return jsonify({"msg": "Missing username or password"}), 400
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        
+        conn = get_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+
+        try:
+            cur.execute("""
+                INSERT INTO users (username, password)
+                VALUES (%s, %s)
+                """, (username, hashed_password))
+            conn.commit()
+            return jsonify({"msg": "User created successfully"}), 201
+        except Exception as e:
+            print(f"Error in register endpoint: {str(e)}")
+            return jsonify({"error": str(e)}), 500
+        finally:
+            cur.close()
+            release_connection(conn)
+
+    except Exception as e:
+        print(f"Error in register endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/api/login', methods=['POST'])
+def login():
+
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+
+    if not username or not password:
+        return jsonify({"msg": "Missing username or password"}), 400
+
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cur.fetchone()
+        if not user:
+            return jsonify({"msg": "Invalid username"}), 401
+        if not bcrypt.check_password_hash(user['password'], password):
+            return jsonify({"msg": "Invalid password"}), 401
+        access_token = create_access_token(identity=user['id'])
+        return jsonify(access_token=access_token), 200
+    except Exception as e:
+        print(f"Error in login endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cur.close()
+        release_connection(conn)
+
+@app.route('/api/protected', methods=['GET'])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
 
 @app.route('/api/entries', methods=['GET', 'POST'])
 def entries():

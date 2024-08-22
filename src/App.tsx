@@ -1,13 +1,14 @@
-import Calendar from './components/Calendar'
+import { AuthProvider } from './context/AuthContext'
+import { Outlet } from 'react-router-dom'
 import './App.css'
 import './index.css'
 
 function App() {
 
   return (
-    <>
-      <Calendar />
-    </>
+    <AuthProvider>
+        <Outlet />
+    </AuthProvider>
   )
 }
 

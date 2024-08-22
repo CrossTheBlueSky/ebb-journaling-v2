@@ -22,7 +22,8 @@ def drop_and_create_tables():
 -- Create the users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
 );
 
 -- Create the moods table for general moods
@@ -63,7 +64,7 @@ CREATE TABLE IF NOT EXISTS notes (
 
 #create test user
 
-    cur.execute('INSERT INTO users (name) VALUES (%s)', ('Test User',))
+    cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', ('Test User', "test123"))
     conn.commit()
     cur.close()
     conn.close()
