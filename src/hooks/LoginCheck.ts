@@ -2,20 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export const LoginCheck = () => {
-  const [name, setName] = useState<string>("");
+interface UserData {
+  id: string;
+  name: string;
+}
+
+export const useLoginCheck = () => {
+  const [userData, setUserData] = useState<UserData | null>(null);
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      getName();
+      getUserData();
     } else {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
 
-  const getName = async (): Promise<void> => {
+  const getUserData = async (): Promise<void> => {
     try {
       const response = await fetch('http://localhost:5000/api/protected', {
         method: 'GET',
@@ -27,14 +32,16 @@ export const LoginCheck = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setName(data.logged_in_as);
+        setUserData({
+          id: data.user_id,
+          name: data.logged_in_as
+        });
       } else {
         throw new Error('Failed to fetch user data');
       }
     } catch (err) {
       console.error(err);
-      logout();
-      navigate('/login');
+      handleLogout();
     }
   };
 
@@ -43,5 +50,9 @@ export const LoginCheck = () => {
     navigate('/login');
   };
 
-  return { name, logout: handleLogout };
+  return { 
+    userId: userData?.id,
+    userName: userData?.name,
+    logout: handleLogout 
+  };
 };

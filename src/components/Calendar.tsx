@@ -9,7 +9,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CalendarCell from './CalendarCell';
-import {LoginCheck} from '../hooks/LoginCheck';
+import {useLoginCheck} from '../hooks/LoginCheck';
 
 const daysOfWeek: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -37,8 +37,7 @@ const setCachedEntries = (key: string, entries: Entry[]): void => {
 const Calendar: React.FC = () => {
 
   //confirming user is logged in
-  const {user, logout} = LoginCheck();
-  console.log(user)
+  const { userId, userName, logout } = useLoginCheck();
 
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -82,10 +81,22 @@ const Calendar: React.FC = () => {
     // Getting the start and end of the month to only fetch entries for the current month
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month, getDaysInMonth(currentDate));
-    const url = `/api/entries?userId=${userId}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+    const url = `/api/entries`;
+    const queryParams = new URLSearchParams({
+      userId: userId.toString(),
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
+    });
 
     try {
-      const response = await fetch(url);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${url}?${queryParams}`, {
+        method: 'GET',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

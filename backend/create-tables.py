@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS moods (
 -- Create the user_moods table for user-specific mood settings
 CREATE TABLE IF NOT EXISTS user_moods (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    mood_id INTEGER REFERENCES moods(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    mood_id INTEGER REFERENCES moods(id) ON DELETE CASCADE,
     color VARCHAR(50) NOT NULL,
     UNIQUE (user_id, mood_id)
 );
@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS user_moods (
 -- Create the entries table
 CREATE TABLE IF NOT EXISTS entries (
     id VARCHAR(255) PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     date date NOT NULL,
-    user_mood_id INTEGER REFERENCES user_moods(id),
+    user_mood_id INTEGER REFERENCES user_moods(id) ON DELETE SET NULL,
     title VARCHAR(255) NOT NULL,
     image_path TEXT,
     entry_text TEXT NOT NULL
@@ -55,16 +55,12 @@ CREATE TABLE IF NOT EXISTS entries (
 -- Create the notes table
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
-    entry_id VARCHAR(255) REFERENCES entries(id),
-    user_id INTEGER REFERENCES users(id),
+    entry_id VARCHAR(255) REFERENCES entries(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     date date NOT NULL,
     text TEXT NOT NULL
 );
     ''')
-
-#create test user
-
-    cur.execute('INSERT INTO users (username, password) VALUES (%s, %s)', ('Test User', "test123"))
     conn.commit()
     cur.close()
     conn.close()
