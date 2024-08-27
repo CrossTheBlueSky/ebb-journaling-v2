@@ -43,16 +43,37 @@ export const LineGraph: React.FC<LineGraphProps> = ({ data, timeRange }) => {
 
   const filteredData = filterDataByTimeRange(data, parseInt(timeRange));
 
+  // Sort data by date
+  filteredData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Get unique mood names and colors
+  const moodSet = new Set(filteredData.map(item => item.mood_name));
+  const moods = Array.from(moodSet);
+  const moodColors = moods.reduce((acc, mood) => {
+    acc[mood] = filteredData.find(item => item.mood_name === mood)?.mood_color || '#000000';
+    return acc;
+  }, {} as Record<string, string>);
+
+  // Calculate cumulative totals
+  const cumulativeTotals = filteredData.reduce((acc, item) => {
+    const date = item.date;
+    if (!acc[date]) {
+      acc[date] = { ...acc[Object.keys(acc).pop() || ''] };
+    }
+    acc[date][item.mood_name] = (acc[date][item.mood_name] || 0) + item.entry_count;
+    return acc;
+  }, {} as Record<string, Record<string, number>>);
+
   const chartData = {
-    labels: filteredData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Mood Entries',
-        data: filteredData.map(item => item.entry_count),
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-      },
-    ],
+    labels: Object.keys(cumulativeTotals),
+    datasets: moods.map(mood => ({
+      label: mood,
+      data: Object.values(cumulativeTotals).map(dailyTotal => dailyTotal[mood] || 0),
+      borderColor: moodColors[mood],
+      backgroundColor: moodColors[mood],
+      fill: false,
+      tension: 0.1,
+    })),
   };
 
   const options: ChartOptions<'line'> = {
@@ -63,7 +84,7 @@ export const LineGraph: React.FC<LineGraphProps> = ({ data, timeRange }) => {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Entry Count',
+          text: 'Cumulative Mood Occurrences',
         },
       },
       x: {
@@ -79,7 +100,11 @@ export const LineGraph: React.FC<LineGraphProps> = ({ data, timeRange }) => {
       },
       title: {
         display: true,
-        text: `Mood Entries Over Time (Last ${timeRange} Days)`,
+        text: `Cumulative Mood Occurrences Over Time (Last ${timeRange} Days)`,
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
       },
     },
   };
@@ -91,4 +116,4 @@ export const LineGraph: React.FC<LineGraphProps> = ({ data, timeRange }) => {
   );
 };
 
-export default LineGraph
+export default LineGraph;
