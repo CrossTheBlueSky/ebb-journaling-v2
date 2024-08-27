@@ -7,6 +7,7 @@ import JournalPage from './components/JournalPage.tsx'
 import LoginPage from './components/LoginPage.tsx'
 import RegistrationPage from './components/RegistrationPage.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import ChartPage from './components/ChartPage.tsx'
 import './index.css'
 
 const router = createBrowserRouter([
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
             path: 'journal/:date',
             element: <JournalPage />
           },
+          {
+            path: 'trends',
+            element: <ChartPage />
+          }
         ]
       },
       {

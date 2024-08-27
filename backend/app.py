@@ -21,10 +21,13 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Set token expirat
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max-limit
 
+
 # Initialize extensions
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}})
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"], 
+                                 "supports_credentials": True, 
+                                 "allow_headers": ["Authorization", "Content-Type"]}})
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -134,16 +137,12 @@ def login():
         app.logger.error(f"Error in login endpoint: {str(e)}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
-from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from psycopg2.extras import RealDictCursor
 
 @app.route('/api/protected', methods=['GET'])
 @jwt_required()
 def protected():
     try:
         current_user = get_jwt_identity()
-        print(f"Current user ID: {current_user}")
 
         with get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -562,6 +561,32 @@ def manage_note(note_id):
         except Exception as e:
             app.logger.error(f"Error deleting note: {str(e)}")
             return jsonify({"error": "An unexpected error occurred"}), 500
+
+@app.route('/api/chart-data/', methods=['GET', 'OPTIONS'])
+@jwt_required()
+def chart_data():
+    current_user = get_jwt_identity()
+    
+    try:
+        with get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT entries.date, moods.name AS mood_name,
+                        user_moods.color AS mood_color,
+                    COUNT(*) AS entry_count
+                    FROM entries
+                    JOIN user_moods ON entries.user_mood_id = user_moods.id
+                    JOIN moods ON user_moods.mood_id = moods.id
+                    WHERE entries.user_id = %s
+                    GROUP BY entries.date, moods.name, user_moods.color
+                    ORDER BY entries.date ASC
+                    """, (current_user,))
+                chart_data = cur.fetchall()
+        
+        return jsonify(chart_data)
+    except Exception as e:
+        app.logger.error(f"Error fetching chart data: {str(e)}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

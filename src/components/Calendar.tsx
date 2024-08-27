@@ -8,16 +8,20 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {useAuth} from '../context/AuthContext';
 import CalendarCell from './CalendarCell';
-import {useLoginCheck} from '../hooks/LoginCheck';
+import { useNavigate } from 'react-router-dom';
 
 const daysOfWeek: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 
 interface Entry {
   id: number;
   date: Date;
   mood_color: string;
 }
+
+
 
 // Utility functions for caching
 const getCachedEntries = (key: string): Entry[] | null => {
@@ -36,8 +40,10 @@ const setCachedEntries = (key: string, entries: Entry[]): void => {
 //Component starts here
 const Calendar: React.FC = () => {
 
+  const navigate = useNavigate();
+  const  {userId, username} = useAuth();
   //confirming user is logged in
-  const { userId, userName, logout } = useLoginCheck();
+  console.log(typeof(userId), username)
 
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -90,6 +96,7 @@ const Calendar: React.FC = () => {
 
     try {
       const token = localStorage.getItem("token");
+      console.log(token)
       const response = await fetch(`${url}?${queryParams}`, {
         method: 'GET',
         headers: { 
@@ -124,7 +131,7 @@ const Calendar: React.FC = () => {
   }, [year, month, currentDate]);
 
   useEffect(() => {
-    fetchUserEntriesForCurrentMonth(1); // Assuming userId is 1
+    fetchUserEntriesForCurrentMonth(userId); 
   }, [fetchUserEntriesForCurrentMonth]);
 
   const renderCalendarDays = (): JSX.Element[] => {
@@ -180,10 +187,14 @@ const Calendar: React.FC = () => {
 
   return (
     <div className="w-full h-full mx-auto mt-0 p-4 pt-0 bg-white rounded-lg shadow-md">
+
       <div className="flex justify-between items-center mb-4">
         <button onClick={prevMonth} className="p-2 rounded-full hover:bg-gray-100">
           <ChevronLeft size={24} />
         </button>
+        <button onClick={()=>navigate('/trends')} className="p-2 text-black rounded-full hover:bg-gray-100">
+      To Trends
+      </button>
         <h2 className="text-xl font-semibold">
           {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </h2>
