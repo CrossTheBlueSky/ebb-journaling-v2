@@ -7,3 +7,6 @@ venv/
 requirements.txt
 *.env
 .venv/
+.static/
+.dist/
+.node_modules/
