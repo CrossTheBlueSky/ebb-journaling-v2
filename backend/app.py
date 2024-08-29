@@ -293,33 +293,6 @@ def moods():
         app.logger.error(f"Error managing mood: {str(e)}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
-@app.route('/api/user_moods', methods=['POST'])
-@jwt_required()
-def user_moods():
-    current_user = get_jwt_identity()
-    data = request.json
-
-    required_fields = ['mood_id', 'color']
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    try:
-        with get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
-                    INSERT INTO user_moods (user_id, mood_id, color)
-                    VALUES (%s, %s, %s)
-                    ON CONFLICT (user_id, mood_id) DO UPDATE SET color = EXCLUDED.color
-                    RETURNING id
-                """, (current_user, data['mood_id'], data['color']))
-                user_mood_id = cur.fetchone()['id']
-                conn.commit()
-
-        return jsonify({"user_mood_id": user_mood_id})
-    except Exception as e:
-        app.logger.error(f"Error managing user mood: {str(e)}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
-
 @app.route('/api/notes', methods=['POST'])
 @jwt_required()
 def create_note():

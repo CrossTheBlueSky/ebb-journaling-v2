@@ -1,1 +1,8 @@
-.env
+__pycache__/
+*.pyc
+*.log
+*.db
+instance/
+venv/
+requirements.txt
+*.env
