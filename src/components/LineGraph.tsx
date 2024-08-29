@@ -64,8 +64,13 @@ export const LineGraph: React.FC<LineGraphProps> = ({ data, timeRange }) => {
     return acc;
   }, {} as Record<string, Record<string, number>>);
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
   const chartData = {
-    labels: Object.keys(cumulativeTotals),
+    labels: Object.keys(cumulativeTotals).map(formatDate),
     datasets: moods.map(mood => ({
       label: mood,
       data: Object.values(cumulativeTotals).map(dailyTotal => dailyTotal[mood] || 0),
@@ -105,6 +110,15 @@ export const LineGraph: React.FC<LineGraphProps> = ({ data, timeRange }) => {
       tooltip: {
         mode: 'index',
         intersect: false,
+        callbacks: {
+          title: (context) => {
+            if (context[0]) {
+              const originalDate = Object.keys(cumulativeTotals)[context[0].dataIndex];
+              return new Date(originalDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+            return '';
+          },
+        },
       },
     },
   };

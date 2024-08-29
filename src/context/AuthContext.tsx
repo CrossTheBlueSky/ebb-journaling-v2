@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/protected', {
+      const response = await fetch('/api/protected', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (response.ok) {
@@ -42,6 +42,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
       } else {
         throw new Error('Failed to fetch user data');
       }
+      console.log("username", username)
     } catch (error) {
       console.error('Error fetching user data:', error);
       logout();
@@ -51,6 +52,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
   const login = (token: string) => {
     localStorage.setItem('token', token);
     setIsAuthenticated(true);
+  
   };
 
   const logout = () => {

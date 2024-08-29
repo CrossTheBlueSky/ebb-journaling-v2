@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import NoteCard from './NoteCard'
 import NewNoteModal from './NewNoteModal'
+import { useAuth } from '../context/AuthContext';
 
 interface NotePageProps {
   entry_id: number;
@@ -9,27 +10,36 @@ interface NotePageProps {
 const NotePage: React.FC<NotePageProps>  = ({entry_id}) => {
  const [noteModalOpen, setNoteModalOpen] = React.useState(false);
  const [notes, setNotes] = useState([]);
- const user_id= 1 //still using a placeholder for now
+ const {userId} = useAuth();
  const date = new Date()
+ const token = localStorage.getItem("token");
 
  useEffect(() => {
   console.log(entry_id)
-    fetch(`http://localhost:5000/api/notes/${entry_id}`)
+    fetch(`/api/notes/${entry_id}`, {
+      method: "GET",
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        "Content-Type": "application/json" },
+
+    })
     .then(response => response.json())
     .then(data => setNotes(data))
     .catch(error => console.error(error));
   }, []);
 
  const handleFormSubmit = async (formData: FormData) => {
-  console.log(formData.get("text"), entry_id, user_id, date)
+  console.log(formData.get("text"), entry_id, userId, date)
 
 
  fetch("http://localhost:5000/api/notes", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json" },
     body: JSON.stringify({
       entry_id: entry_id,
-      user_id: user_id,
+      user_id: userId,
       date : date,
       text: formData.get("text"),
     }),

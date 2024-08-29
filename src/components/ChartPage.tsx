@@ -2,21 +2,19 @@ import React, { useState, useEffect } from 'react';
 import LineGraph from './LineGraph';
 import PieChart from './PieChart';
 import { useAuth } from '../context/AuthContext';
+import { getThemeClass} from '../utils/theme-utils';
+import { useNavigate } from 'react-router-dom';
 
-interface MoodData {
-  date: string;
-  entry_count: number;
-  mood_color: string;
-  mood_name: string;
-}
 
 type TimeRange = '30' | '90' | '180' | '365';
 
 const ChartPage = () => {
+
   const [activeChart, setActiveChart] = useState('line');
   const [timeRange, setTimeRange] = useState('30');
   const  {userId, username} = useAuth();
   const [moodData, setMoodData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -55,8 +53,13 @@ const ChartPage = () => {
   };
 
   return (
-    <div className="mood-tracking-chart">
-      <div className="chart-controls">
+    <div className={`mood-tracking-chart ${getThemeClass('background')}`}>
+      <div className={`${getThemeClass('primary')}`}>
+      <button onClick={() => navigate("/")} className={`text-2xl m-1`}>
+            Back to Calendar
+          </button>
+      </div>
+      <div className="chart-controls m-2">
         <select value={activeChart} onChange={handleChartTypeChange}>
           <option value="line">Line Chart</option>
           <option value="pie">Pie Chart</option>
@@ -68,7 +71,7 @@ const ChartPage = () => {
           <option value="365">1 Year</option>
         </select>
       </div>
-      <div className="chart-container">
+      <div className="mt-2 chart-container w-11/12">
         {activeChart === 'line' ? (
           <LineGraph data={moodData} timeRange={timeRange} />
         ) : (

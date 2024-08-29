@@ -61,7 +61,7 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({ isOpen, onSubmit, onClose
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full ">
         <form id="new-entry-form" onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">
@@ -126,11 +126,6 @@ const NewEntryModal: React.FC<NewEntryModalProps> = ({ isOpen, onSubmit, onClose
                 file:bg-blue-50 file:text-blue-700
                 hover:file:bg-blue-100"
             />
-            {previewUrl && (
-              <div className="mt-4">
-                <img src={previewUrl} alt="Preview" className="max-w-full h-auto rounded-lg shadow-md" />
-              </div>
-            )}
           </div>
           <div className="flex items-center justify-between">
             <button

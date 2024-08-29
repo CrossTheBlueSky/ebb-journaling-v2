@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -22,7 +22,17 @@ interface PieChartProps {
   timeRange: '30' | '90' | '180' | '365';
 }
 
-export const PieChart: React.FC<PieChartProps> = ({ data, timeRange }) => {
+const PieChart: React.FC<PieChartProps> = ({ data, timeRange }) => {
+  // Create a consistent mood-to-color mapping using all data
+  const moodColors = useMemo(() => {
+    return data.reduce((acc, item) => {
+      if (!acc[item.mood_name]) {
+        acc[item.mood_name] = item.mood_color;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+  }, [data]);
+
   const filterDataByTimeRange = (data: MoodData[], days: number) => {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
@@ -41,7 +51,7 @@ export const PieChart: React.FC<PieChartProps> = ({ data, timeRange }) => {
     datasets: [
       {
         data: Object.values(moodCounts),
-        backgroundColor: filteredData.map(item => item.mood_color),
+        backgroundColor: Object.keys(moodCounts).map(mood => moodColors[mood] || '#000000'),
         hoverOffset: 4,
       },
     ],
@@ -58,6 +68,17 @@ export const PieChart: React.FC<PieChartProps> = ({ data, timeRange }) => {
         display: true,
         text: `Mood Distribution (Last ${timeRange} Days)`,
       },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || '';
+            const value = context.formattedValue;
+            const total = context.dataset.data.reduce((acc: number, data: number) => acc + data, 0);
+            const percentage = ((context.parsed / total) * 100).toFixed(2);
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
+      }
     },
   };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getThemeClass } from '../utils/theme-utils';
 
 interface CalendarCellProps {
   day: number;
@@ -12,7 +13,7 @@ interface CalendarCellProps {
 const CalendarCell: React.FC<CalendarCellProps> = ({ day, isCurrentMonth, customColor, date, entry }) => {
   const navigate = useNavigate();
   
-  const cellClasses = `h-full flex items-center justify-center border border-gray-200 ${isCurrentMonth ? '' : 'text-gray-400'}`;
+  const cellClasses = `h-full flex items-center justify-center border border-gray-200  ${isCurrentMonth ? `text-black-700` : 'text-gray-400'}`;
 
   const dateString = `${date.getMonth() + 1}_${date.getDate()}_${date.getFullYear()}`;
   
@@ -25,7 +26,7 @@ const CalendarCell: React.FC<CalendarCellProps> = ({ day, isCurrentMonth, custom
   };
 
   const cellStyle: React.CSSProperties = {
-    backgroundColor: isCurrentMonth ? customColor : '#f3f4f6',
+    backgroundColor: isCurrentMonth ? customColor : getThemeClass('non_month'),
   };
 
   return (

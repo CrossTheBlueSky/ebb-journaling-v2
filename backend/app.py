@@ -7,8 +7,7 @@ from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
-import os
-import uuid
+import os, uuid, json
 from flask_cors import CORS
 from config import DB_CONFIG, DB_SECRET_KEY
 from contextlib import contextmanager
@@ -196,7 +195,13 @@ def entries():
             return jsonify({"error": "An unexpected error occurred"}), 500
 
     elif request.method == 'POST':
-        data = request.json
+        # Check if the post request has the file part
+        if 'image' not in request.files and 'data' not in request.form:
+            return jsonify({"error": "No file part or JSON data"}), 400
+
+        file = request.files.get('image')
+        data = json.loads(request.form.get('data', '{}'))
+
         if not data:
             return jsonify({"error": "No JSON data received"}), 400
 
@@ -206,14 +211,12 @@ def entries():
 
         try:
             image_path = None
-            if 'image' in request.files:
-                file = request.files['image']
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    unique_filename = f"{uuid.uuid4()}_{filename}"
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-                    file.save(file_path)
-                    image_path = f"/static/uploads/{unique_filename}"
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4()}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+                file.save(file_path)
+                image_path = f"../../backend/static/uploads/{unique_filename}"
 
             new_entry_id = f'{current_user}_{data["date"]}'
 
@@ -225,7 +228,7 @@ def entries():
                         ON CONFLICT (id) DO UPDATE
                         SET user_mood_id = EXCLUDED.user_mood_id,
                             title = EXCLUDED.title,
-                            image_path = EXCLUDED.image_path,
+                            image_path = COALESCE(EXCLUDED.image_path, entries.image_path),
                             entry_text = EXCLUDED.entry_text
                         RETURNING id
                         """, 
