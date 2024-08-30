@@ -35,6 +35,7 @@ As Ebb is currently not deployed, follow these steps to run it locally:
    cd backend
    pipenv shell
    pip install -r requirements.txt
+   python create-tables.py
    ```
 
 3. Set up the frontend:
