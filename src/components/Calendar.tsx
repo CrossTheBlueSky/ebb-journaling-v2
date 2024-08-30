@@ -55,8 +55,8 @@ const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [entries, setEntries] = useState<Entry[]>([]);
   const [uniqueMoods, setUniqueMoods] = useState<MoodInfo[]>([]);
-
-
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+ 
   //Lot of things to get the calendar to work with month rollover, caching, date coloring, etc.
   const getDaysInMonth = (date: Date): number => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   const getFirstDayOfMonth = (date: Date): number => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
@@ -75,20 +75,10 @@ const Calendar: React.FC = () => {
   };
 
 
-  //Fetching entries for current month and caching them to reduce future fetch calls
+  //Fetching entries for current month
 
   
   const fetchUserEntriesForCurrentMonth = useCallback(async (userId: number) => {
-    // const cacheKey = `entries_${userId}_${year}_${month}`;
-    // const cachedEntries = getCachedEntries(cacheKey);
-    
-
-    
-    // don't fetch if already cached - REMOVED FOR NOW
-    // if (cachedEntries) {
-    //   setEntries(cachedEntries);
-    //   return;
-    // }
 
     // Getting the start and end of the month to only fetch entries for the current month
     const startDate = new Date(year, month, 1);
@@ -127,16 +117,15 @@ const Calendar: React.FC = () => {
         date: adjustedDate,
       }});
       setEntries(entriesWithDates);
-      // setCachedEntries(cacheKey, entriesWithDates);
-
       const moods = entriesWithDates.reduce((acc: MoodInfo[], entry) => {
         if (!acc.some(mood => mood.color === entry.mood_color)) {
           acc.push({ color: entry.mood_color, name: entry.mood_name });
         }
         return acc;
       }, []);
-      console.log(moods)
       setUniqueMoods(moods);
+      setIsLoading(false);
+      console.log(entries)
     } catch (error) {
       console.error("Could not fetch entries:", error);
     }
@@ -144,7 +133,7 @@ const Calendar: React.FC = () => {
 
   useEffect(() => {
     fetchUserEntriesForCurrentMonth(userId); 
-  }, [fetchUserEntriesForCurrentMonth]);
+  }, [fetchUserEntriesForCurrentMonth, userId]);
 
   const renderCalendarDays = (): JSX.Element[] => {
     const days: JSX.Element[] = [];
@@ -196,7 +185,6 @@ const Calendar: React.FC = () => {
   };
 
   const renderMoodLegend = () => {
-    console.log(uniqueMoods)
     return (
       <div className="flex flex-wrap justify-center items-center my-2 space-x-4">
         {uniqueMoods.map((mood, index) => (
@@ -212,6 +200,10 @@ const Calendar: React.FC = () => {
     );
   };
 
+ //Give loading feedback while data is being fetched
+ if (isLoading) {
+  return <div>Loading...</div>;
+}
 
 
   return (

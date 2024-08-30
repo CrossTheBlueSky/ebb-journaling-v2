@@ -69,7 +69,7 @@ def seed_database():
                 date = current_date - timedelta(days=random.randint(0, 99))
                 user_mood_id = random.choice(user_mood_ids)
                 title = f"Entry {i+1} for user {user_id}"
-                image_path = f"/path/to/image_{user_id}_{i+1}.jpg"
+                image_path = f"https://picsum.photos/300/600"
                 entry_text = f"This is the text for entry {i+1} of user {user_id}. It's a longer entry to provide more substantial content for testing purposes."
 
                 cur.execute("""

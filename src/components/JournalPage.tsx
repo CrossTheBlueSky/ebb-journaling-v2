@@ -27,7 +27,7 @@ const JournalPage: React.FC = () => {
       console.log(state.entry)
       setMood(state.entry.mood_name);
       setMoodColor(state.entry.mood_color);
-      setEntryText(state.entry.text);
+      setEntryText(state.entry.entry_text);
       setTitle(state.entry.title);
       setImagePath(state.entry.image_path)
     }else if(mood === "") {
