@@ -8,6 +8,7 @@ Ebb is a powerful journaling application that combines daily entries with mood t
 - **Mood Tracking**: Associate each entry with a mood and corresponding color.
 - **Calendar Interface**: View your entries and moods on an intuitive calendar layout.
 - **Trend Analysis**: Track and visualize your mood trends over time.
+- **Reflective Notes**: Add notes to past entries, allowing for reflection and insights without altering the original content.
 - **Color-Coded Entries**: Quickly gauge your emotional state with color-coded calendar cells.
 - **Light and Dark Mode**: Customize your journaling experience with adjustable themes for comfort in any lighting condition.
 
@@ -65,12 +66,15 @@ As Ebb is currently not deployed, follow these steps to run it locally:
 ### Calendar View with Color-Coded Cells
 <img src="images/calendar-page.png" width="600" alt="Calendar view showing color-coded mood entries">
 
-### Journal Entries
-<img src="images/entry-page.png" width="600" alt="Journal Page in Ebb">
-
 ### Mood Trend Analysis View
 <img src="images/line-graph.png" width="600" alt="Analyzing mood trends over time in a line graph">
 <img src="images/pie-chart.png" width="600" alt="Analyzing mood trends in a pie chart">
+
+### Journal Entries
+<img src="images/entry-page.png" width="600" alt="Journal Page in Ebb">
+
+### Notes Added to Journal Entries
+<img src="images/notes-page.png" width="600" alt="Notes Page in Ebb">
 
 ### Light and Dark Mode Comparison
 <p float="left">
@@ -84,7 +88,9 @@ If you encounter any issues or have questions, please file an issue on our [GitH
 
 ## License
 
-This project is licensed under the GNU General Public License (GPL). See the [LICENSE](LICENSE) file for details.
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Disclaimer
 
