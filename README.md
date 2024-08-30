@@ -89,8 +89,6 @@ If you encounter any issues or have questions, please file an issue on our [GitH
 
 ## License
 
-## License
-
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Disclaimer
